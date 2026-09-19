@@ -1,6 +1,3 @@
-# ==============================================================================
-# 1. COMPILER & FLAGS CONFIGURATION
-# ==============================================================================
 NAME     := azork
 
 SRC_DIR  := src
@@ -11,18 +8,12 @@ TARGET   := $(BIN_DIR)/$(NAME)
 
 CC       := gcc
 CFLAGS   := -Wall -Wextra -Wpedantic -O2 -std=c23
-CPPFLAGS := -I$(INC_DIR) -MMD -MP
+CPPFLAGS := -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L -MMD -MP
 
-# ==============================================================================
-# 2. DYNAMIC FILE DETECTION
-# ==============================================================================
 SRCS     := $(wildcard $(SRC_DIR)/*.c)
 OBJS     := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 DEPS     := $(OBJS:.o=.d)
 
-# ==============================================================================
-# 3. BUILD RULES
-# ==============================================================================
 .PHONY: all build run clean test reset purge
 
 all: build
@@ -46,7 +37,7 @@ run: $(TARGET)
 	@echo ""
 	@echo "-------------------------[test]--------------------------------"
 	@echo ""
-	@./$(TARGET)
+	@./$(TARGET) --help
 	@echo ""
 	@echo "---------------------------------------------------------------"
 	@echo ""
@@ -63,13 +54,10 @@ reset:
 	@rm -rf $(INC_DIR)/*
 	@rm -rf $(OBJ_DIR)
 
-# For arch makepkg -si helper. 
-purge: clean 
+# For arch makepkg -si helper.
+purge: clean
 	@echo "Cleaning makepkg residues..."
-	@rm -rf pkg 
-	@rm -f *.tar.zst 
+	@rm -rf pkg
+	@rm -f *.tar.zst
 
-# ==============================================================================
-# 4. HEADER DEPENDENCY INCLUSION
-# ==============================================================================
 -include $(DEPS)
