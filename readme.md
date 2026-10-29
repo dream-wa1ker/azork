@@ -156,3 +156,8 @@ See [`LICENSE`](LICENSE) for the project license.
 ## More 
 
 This is actually, a physics project aligned with the cybersecurity curriculum of University. So, the main part includes the physics of how this project works, why changing the LSB does nothing to audio quality, or maybe, if it does, the impact is less enough and not perceivable by people. Music can be found, but the finding of the changes in the audio recorded, and the speech of the person is harder due to a more natural production environment that the studio quality music. To see about the physics of this, start [here](docs/physics/intro.md);
+
+>[!NOTE]
+> I am not going to explain the format of the WAV file type and what RIFF header, it's structures look like, if you want to know about it too, then you can check this [wav-creator](https://github.com/dream-wa1ker/wav-creator.git). Made with lots of comments, if you remove all those comments, will be just a 100 lines of code...
+
+
