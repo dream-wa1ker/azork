@@ -419,3 +419,5 @@ build/bin/azork --help
 - [ITU-R Recommendation BS.1116: Methods for the subjective assessment of small impairments in audio systems](https://www.itu.int/rec/R-REC-BS.1116-3-201502-I/en)
 - [Example research on limitations of direct audio LSB substitution](https://www.sciencedirect.com/science/article/pii/S2214212615000034)
 
+
+- For human friendly version of the same document - see [this](./friend.md)
