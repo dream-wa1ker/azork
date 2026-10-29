@@ -160,4 +160,6 @@ This is actually, a physics project aligned with the cybersecurity curriculum of
 >[!NOTE]
 > I am not going to explain the format of the WAV file type and what RIFF header, it's structures look like, if you want to know about it too, then you can check this [wav-creator](https://github.com/dream-wa1ker/wav-creator.git). Made with lots of comments, if you remove all those comments, will be just a 100 lines of code...
 
+### AI-Usage
 
+AI was used in the creation of this project. To know how, the code quality and other descriptions, you can read [this](./docs/code/ai-usage.md)
