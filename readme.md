@@ -1,52 +1,155 @@
-# Azork 
+# AZORK
 
-A GPG capable wav audio steganography tool for linux. Intended to be a project prototype for physics - Acoustics and Ultrasonics course.
+AZORK is a Linux command-line tool for acoustic steganography. It hides a file inside a WAV audio file and can later recover it. The project was developed as a physics lab prototype for an acoustics and ultrasonics course.
 
+AZORK also has an optional GPG mode. In that mode, it signs and encrypts the payload before embedding it in the audio; during recovery, GPG decrypts the payload and checks its signature.
 
+## How it works
 
-## Installing the Project
+AZORK stores data in the least significant bit (LSB) of the first byte of each 32-bit PCM audio sample. Each payload bit uses one sample. The program changes at most one bit in a sample, which keeps the numerical change to the audio sample very small.
 
-1) Build the project.
+The hidden stream contains:
 
-```bash
-make build 
-# or 
-make all
+1. A 100-byte AZORK header, including a magic value, format version, and payload type.
+2. A 4-byte payload length.
+3. The payload bytes (raw file data or GPG output).
+
+The header and payload are embedded in the WAV `data` chunk. Other chunks, such as audio metadata before the data chunk, are preserved as they were in the input file.
+
+## WAV requirements
+
+The input must be a RIFF/WAVE file with:
+
+- Stereo audio (2 channels)
+- 32-bit PCM samples
+- 8-byte stereo frame alignment
+- A sample rate of 96,000 Hz by default
+
+Use `--sample-rate` to set a different expected sample rate for both encoding and decoding. The program supports standard PCM and WAVE_FORMAT_EXTENSIBLE files whose subformat is PCM. Other WAV encodings, including compressed audio and floating-point samples, are not supported.
+
+## Capacity
+
+AZORK uses one sample per embedded bit. It reserves 832 samples for the header and payload length, then uses another 8 samples per payload byte. With stereo audio, the data chunk has two samples per frame, so the approximate maximum payload capacity is:
+
+```text
+(data chunk bytes / 4 - 832) / 8 bytes
 ```
 
-2) Run the main binary. 
+The actual payload must fit in the WAV's audio data. In GPG mode, the encrypted and signed output is larger than the original file, so it uses more capacity.
 
-This one builds the binary and then runs it. Here the build directory is not deleted and persists. 
+## Build
 
-```bash 
-make run
+Requirements:
+
+- Linux or another POSIX-like environment
+- GCC with C23 support
+- GNU Make
+- GPG, if using GPG mode
+
+From the project directory, build the executable with:
+
+```sh
+make
 ```
 
-3) Test the program 
+The executable is created at `build/bin/azork`.
 
-This one will build the binary and then run it, then finally clean it. No build directory persists. 
+Other Make targets:
 
-```bash 
-make test 
+```sh
+make build  # Build the executable
+make run    # Build and print the command-line help
+make clean  # Remove the build directory
+make test   # Build, print help, then clean; this is not an encode/decode test suite
 ```
 
-4) Clean the project structure 
+For Arch Linux, the project includes a `PKGBUILD`; build and install it with:
 
-This will remove the build directory and clean the object files. 
-
-```bash 
-make clean
+```sh
+makepkg -si
 ```
 
->[!NOTE]
-> I have also included a shell script called `clean.sh` for cleaning all those files from `src/` and `include/`. I have also added the `make reset` command which will reset the entire project to the baseline, same as clean.sh, but from make. 
+## Usage
 
-**Arch `makepkg`**
+### Hide a file (raw mode)
 
-For installing the binary system wide, if you are in an arch based repo, you need to use the `makepkg` to build and install the binary to standard paths. Run the command as given below the install it. 
-
-```bash 
-makepkg -si 
+```sh
+build/bin/azork \
+  --encode secret.txt \
+  --from music.wav \
+  --to music-with-payload.wav
 ```
 
+Short options are also available:
+
+```sh
+build/bin/azork -e secret.txt -f music.wav -t music-with-payload.wav
+```
+
+### Recover a raw file
+
+```sh
+build/bin/azork \
+  --decode music-with-payload.wav \
+  --to recovered.txt
+```
+
+### Hide a signed and encrypted file
+
+Provide at least one GPG recipient. The recipient must have a public key available to the sender. GPG must also be able to select a signing key; `--signer` can specify one explicitly.
+
+```sh
+build/bin/azork \
+  --encode secret.txt \
+  --from music.wav \
+  --to music-with-payload.wav \
+  --gpg \
+  --recipient recipient@example.com \
+  --signer sender@example.com
+```
+
+Repeat `--recipient` to encrypt for more than one recipient:
+
+```sh
+--recipient alice@example.com --recipient bob@example.com
+```
+
+### Recover a GPG payload
+
+The recipient needs the matching private key, and GPG may ask for its passphrase depending on the local GPG setup.
+
+```sh
+build/bin/azork \
+  --decode music-with-payload.wav \
+  --to recovered.txt \
+  --gpg
+```
+
+### Use a different expected sample rate
+
+The chosen rate must match the WAV file for both encoding and decoding. For example, for a 48 kHz WAV:
+
+```sh
+build/bin/azork -e secret.txt -f music.wav -t hidden.wav --sample-rate 48000
+build/bin/azork -d hidden.wav -t recovered.txt --sample-rate 48000
+```
+
+### Help
+
+```sh
+build/bin/azork --help
+```
+
+## Limitations and handling notes
+
+- AZORK modifies the audio sample data. Avoid processing the resulting WAV with tools that resample, normalize, convert formats, or recompress it; such changes can damage or erase the hidden bits.
+- Raw mode does not encrypt or authenticate the payload. Anyone who knows the format can extract it, and accidental changes to the audio can corrupt it.
+- GPG mode protects the payload cryptographically, but the existence of hidden data is not concealed from steganalysis. The embedding pattern is sequential and uses the same sample bit throughout.
+- This is a prototype with narrow WAV-format support, not a general-purpose steganography or secure communications system.
+- The tool reads the complete WAV and payload into memory, so memory use grows with file size.
+- Check that the selected output path is safe to overwrite. Output files are created with truncation if they already exist.
+
+## License
+
+See [`LICENSE`](LICENSE) for the project license.
 
