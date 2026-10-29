@@ -6,5 +6,5 @@ build/
 
 # ignore the compiled binary.
 # you gotta change this as per your binary name. 
-my_program
+pkg/
 
