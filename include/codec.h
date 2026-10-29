@@ -1,6 +1,4 @@
-#ifndef AZORK_CODEC_H
-#define AZORK_CODEC_H
-
+#pragma once
 #include "types.h"
 
 
@@ -14,7 +12,6 @@ void encode(const Options *options);
 // recovered payload to options->to.
 void decode(const Options *options);
 
-#endif /* AZORK_CODEC_H */
 
 // the above functions are the code of the azork codec, the main
 // function, takes in options, then encodes or decodes, based on
